@@ -283,34 +283,36 @@ with tab1:
 # -------------------------
 with tab2:
     st.subheader("🔄 RAG Workflow Architecture")
-    try:
-        import graphviz
-        dot = graphviz.Digraph(comment='Agentic RAG Workflow')
-        dot.attr(rankdir='TB', size='12,8', node_shape='box', style='filled,rounded', fontname='Arial', fontsize='12')
-
-        # Nodes
-        dot.node('user', '👤 User Query', fillcolor='#e3f2fd', color='#1976d2', fontcolor='#1976d2')
-        dot.node('generate', '🤖 Generate Query\nor Respond', fillcolor='#e8f5e8', color='#388e3c', fontcolor='#388e3c')
-        dot.node('retrieve', '🔍 Retrieve\nDocuments', fillcolor='#fff3e0', color='#f57c00', fontcolor='#f57c00')
-        dot.node('rewrite', '✏️ Rewrite\nQuestion', fillcolor='#fce4ec', color='#c2185b', fontcolor='#c2185b')
-        dot.node('answer', '💬 Generate\nAnswer', fillcolor='#f3e5f5', color='#7b1fa2', fontcolor='#7b1fa2')
-        dot.node('grade', '📊 Grade\nDocuments', fillcolor='#e0f2f1', color='#00796b', fontcolor='#00796b')
-
-        # Edges
-        dot.edge('user', 'generate', 'Input Query')
-        dot.edge('generate', 'retrieve', 'Need Documents?')
-        dot.edge('retrieve', 'grade', 'Retrieved Chunks')
-        dot.edge('grade', 'rewrite', 'Relevant?')
-        dot.edge('rewrite', 'answer', 'Refined Query')
-        dot.edge('answer', 'user', 'Final Response')
-        dot.edge('generate', 'answer', 'Direct Answer', style='dashed', color='#666666')
-        dot.edge('grade', 'answer', 'Highly Relevant', style='dashed', color='#666666')
-
-        # Display
-        graph_bytes = dot.pipe(format='png')
-        st.image(graph_bytes, caption="Agentic RAG Workflow Architecture", use_container_width=True)
-    except Exception as e:
-        st.error(f"❌ Error displaying graph: {str(e)}")
+    
+    # Create the DOT graph string
+    dot_graph = """
+    digraph G {
+        rankdir=TB;
+        size="12,8";
+        node [shape=box, style="filled,rounded", fontname="Arial", fontsize="12"];
+        
+        // Nodes
+        user [label="👤 User Query", fillcolor="#e3f2fd", color="#1976d2", fontcolor="#1976d2"];
+        generate [label="🤖 Generate Query\\nor Respond", fillcolor="#e8f5e8", color="#388e3c", fontcolor="#388e3c"];
+        retrieve [label="🔍 Retrieve\\nDocuments", fillcolor="#fff3e0", color="#f57c00", fontcolor="#f57c00"];
+        rewrite [label="✏️ Rewrite\\nQuestion", fillcolor="#fce4ec", color="#c2185b", fontcolor="#c2185b"];
+        answer [label="💬 Generate\\nAnswer", fillcolor="#f3e5f5", color="#7b1fa2", fontcolor="#7b1fa2"];
+        grade [label="📊 Grade\\nDocuments", fillcolor="#e0f2f1", color="#00796b", fontcolor="#00796b"];
+        
+        // Edges
+        user -> generate [label="Input Query"];
+        generate -> retrieve [label="Need Documents?"];
+        retrieve -> grade [label="Retrieved Chunks"];
+        grade -> rewrite [label="Relevant?"];
+        rewrite -> answer [label="Refined Query"];
+        answer -> user [label="Final Response"];
+        generate -> answer [label="Direct Answer", style=dashed, color="#666666"];
+        grade -> answer [label="Highly Relevant", style=dashed, color="#666666"];
+    }
+    """
+    
+    # Display the graph using st.graphviz_chart
+    st.graphviz_chart(dot_graph, use_container_width=True)
 
 # -------------------------
 # Analytics Tab
