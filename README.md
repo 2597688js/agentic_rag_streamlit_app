@@ -429,12 +429,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Community**: Join relevant AI/ML communities for support
 
 ### **Contact Information**
-- **Repository**: [GitHub Repository URL]
-- **Issues**: [GitHub Issues Page]
-- **Email**: [Your Contact Email]
+- **Email**: janarddansarkar@gmail.com
 
 ---
 
 **Made with ❤️ for the AI/ML community**
 
-*Last updated: [Current Date]*
+*Last updated: [24-08-2025]*
