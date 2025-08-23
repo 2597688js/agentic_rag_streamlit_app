@@ -117,25 +117,6 @@ with tab1:
                 "name": f.name,
                 "content": f.getvalue()  # this gives bytes
             })
-        # for f in uploaded_files:
-        #     # Get the file path from the uploaded file object
-        #     file_path = f.name
-        #     if hasattr(f, 'file') and hasattr(f.file, 'name'):
-        #         file_path = f.file.name
-        #     elif hasattr(f, '_file') and hasattr(f._file, 'name'):
-        #         file_path = f._file.name
-        #     elif hasattr(f, 'path'):
-        #         file_path = f.path
-            
-        #     # If we can't get the actual path, use the filename
-        #     if not file_path or file_path == f.name:
-        #         file_path = f.name
-            
-        #     sources.append(file_path)
-        #     st.sidebar.info(f"Added file: {file_path}")
-    
-
-
     # Process URLs
     if urls:
         for url in urls.split(','):
@@ -167,27 +148,32 @@ with tab1:
     if build_kb_button and sources:
         with st.spinner("🔨 Building knowledge base..."):
             try:
+                # st.write(sources)
                 # Document processing
                 document_processor = DocumentProcessor()
                 docs_list = document_processor.load_documents(sources)
-                
+
+                # st.write(docs_list)
+
                 if not docs_list:
                     st.error("❌ No documents loaded! Please check your files and URLs.")
                     st.stop()
-                
+            
                 document_splitter = DocumentSplitter()
                 doc_splits = document_splitter.split_documents(docs_list)
                 logger.info(f"Split documents into {len(doc_splits)} chunks")
-                
+
+                # st.write(doc_splits)
+            
                 document_retriever = DocumentRetriever(doc_splits)
-                
+            
                 # Store in session state
                 st.session_state['document_retriever'] = document_retriever
                 st.session_state['current_sources'] = sources.copy()
                 st.session_state['knowledge_base_built'] = True
-                
+            
                 st.success(f"✅ Knowledge base built successfully! Loaded {len(docs_list)} documents, created {len(doc_splits)} chunks.")
-                
+            
             except Exception as e:
                 st.error(f"❌ Error building knowledge base: {str(e)}")
                 logger.error(f"Knowledge base build error: {e}")
@@ -202,29 +188,34 @@ with tab1:
     if user_input:
         # Use the pre-built document retriever from session state
         document_retriever = st.session_state['document_retriever']
-        top_docs = document_retriever.retrieve_top_k(user_input, k=3)
+        #top_docs = document_retriever.retrieve_top_k(user_input, k=3)
         retrieved_docs = document_retriever.retrieve_documents(user_input, k=3)
+
+        # st.write("Retrieved Documents")
+        # st.write(retrieved_docs)  
 
         # Sidebar: show retrieved docs
         with st.sidebar.expander("📚 Retrieved Documents", expanded=False):
-            for i, d in enumerate(top_docs, 1):
+            for i, d in enumerate(retrieved_docs, 1):
                 with st.expander(f"Document {i}: {d.metadata.get('source','Unknown')}", expanded=False):
                     st.markdown(f"**Source:** {d.metadata.get('source','Unknown')}")
                     if 'page' in d.metadata:
                         st.markdown(f"**Page:** {d.metadata.get('page','N/A')}")
                     st.markdown(f"**Content:** ```{d.page_content[:200]}{'...' if len(d.page_content) > 200 else ''}```")
 
-        # Initialize Agentic RAG Graph
+        # ----- Fine till here -----
+
+        # # Initialize Agentic RAG Graph
         chatbot = MixRAGGraph(document_retriever.retriever_tool)
 
-        # -------------------------
+        # # -------------------------
         # Add user message
         # -------------------------
         st.session_state['message_history'].append({'role': 'user', 'content': user_input})
         with st.chat_message("user"):
             st.text(user_input)
 
-        # -------------------------
+        # # -------------------------
         # Stream Agentic RAG response
         # -------------------------
         history_msgs = convert_history_to_lc_messages(st.session_state['message_history'])
@@ -239,10 +230,6 @@ with tab1:
                     config={"configurable": {"thread_id": st.session_state['thread_id']}},
                     stream_mode="messages"
                 ):
-                    # Log node execution
-                    if hasattr(metadata, 'get') and metadata.get('node'):
-                        debug_nodes.write(f"🔄 Executing node: {metadata['node']}")
-                    
                     if not hasattr(message_chunk, "content"):
                         continue
                     
